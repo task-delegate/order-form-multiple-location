@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Save, History, Wand2, Loader2, Printer, MapPin, RefreshCcw, Edit2, LogOut, User, CheckCircle, HardDrive, UploadCloud, FileSpreadsheet, X, Eye, Settings, Copy, Check, Users, Package, HelpCircle, RefreshCw, Home, Download, Menu } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
-import { BRANCHES, MOCK_ITEMS, UNIT_CATEGORIES, MEASUREMENT_UNITS, SALES_PERSONS, BRANCH_ID_MAPPING } from './constants';
+import { BRANCHES, UNIT_CATEGORIES, MEASUREMENT_UNITS, SALES_PERSONS, BRANCH_ID_MAPPING } from './constants';
 import { FormMode, OrderFormData, OrderLineItem, SubmittedOrder, SalesPerson, Branch, RegisteredUser, Customer, Item } from './types';
 import { Button } from './components/Button.tsx';
 import { Input, Select } from './components/Input.tsx';
 import { smartParseOrder } from './services/geminiService';
 import { submitOrderToSheet } from './services/sheetService';
-import { fetchCustomersBySalesPerson, fetchMasterItems, createNewCustomer, saveOrderToDb, bulkUpsertItems, registerUser, loginUser, fetchAllAppUsers, bulkUpsertCustomers, createGhostUser, fetchCustomersByBranchAndSalesPerson, seedTestCustomers } from './services/supabaseService';
+import { fetchCustomersBySalesPerson, fetchMasterItems, createNewCustomer, saveOrderToDb, bulkUpsertItems, registerUser, loginUser, fetchAllAppUsers, bulkUpsertCustomers, createGhostUser, fetchCustomersByBranchAndSalesPerson, seedTestCustomers, diagnoseSupabaseTables } from './services/supabaseService';
 
 const INITIAL_FORM_DATA: OrderFormData = {
   branch: '',
@@ -96,6 +95,7 @@ function App() {
   // Settings State
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [googleScriptUrl, setGoogleScriptUrl] = useState('');
+  const [proxyUrl, setProxyUrl] = useState('');
   const [isCopied, setIsCopied] = useState(false);
 
   // PWA Install State
@@ -143,6 +143,9 @@ function App() {
 
     const savedUrl = localStorage.getItem('google_script_url');
     if (savedUrl) setGoogleScriptUrl(savedUrl);
+
+    const savedProxyUrl = localStorage.getItem('proxy_url');
+    if (savedProxyUrl) setProxyUrl(savedProxyUrl);
   }, []);
 
   // Load Data from Supabase when session is active
@@ -153,12 +156,16 @@ function App() {
     console.log('📥 Loading items from database...');
     const masterItems = await fetchMasterItems();
     console.log(`✅ Loaded ${masterItems.length} items from Supabase`);
+    
     if (masterItems.length > 0) {
       console.log('📋 Sample items:', masterItems.slice(0, 3));
+      console.log('📋 Categories in loaded items:', new Set(masterItems.map(i => i.category)));
       setDbItems(masterItems);
     } else {
-      console.warn('⚠️  No items from database, using mock items');
-      setDbItems(MOCK_ITEMS);
+      console.warn('⚠️  No items from database');
+      console.warn('   fetchMasterItems() returned empty array');
+      console.warn('   Check Supabase items_new table for data');
+      setDbItems([]);
     }
 
     // 2. Fetch All Sales Persons (Registered Users) for the dropdown
@@ -172,6 +179,15 @@ function App() {
     setAllSalesPersons(users);
     setIsRefreshingUsers(false);
   };
+
+  // Expose diagnostic function to window for console access
+  useEffect(() => {
+    (window as any).diagnoseSupabase = async () => {
+      console.log('\n🔍 Running Supabase diagnostics...');
+      await diagnoseSupabaseTables();
+    };
+    console.log('💡 Tip: In console, run: diagnoseSupabase() to check Supabase tables');
+  }, []);
 
   useEffect(() => {
     if (session) {
@@ -819,14 +835,37 @@ function App() {
   };
 
   const handleSaveSettings = () => {
-    if (!googleScriptUrl.startsWith("https://script.google.com/macros/s/")) {
-      alert("Invalid URL! \nThe Web App URL must start with:\nhttps://script.google.com/macros/s/ \n\nPlease check your deployment steps and copy the correct 'Web App' URL.");
+    // Validate at least one URL is configured
+    if (!googleScriptUrl && !proxyUrl) {
+      alert("⚠️ Please configure at least one:\n\n1. Proxy URL (Recommended) - for cloud storage\n2. OR Google Script URL - for direct connection");
       return;
     }
 
-    localStorage.setItem('google_script_url', googleScriptUrl);
+    // Validate Google Script URL format if provided
+    if (googleScriptUrl && !googleScriptUrl.startsWith("https://script.google.com/macros/s/")) {
+      alert("Invalid Google Script URL!\nMust start with:\nhttps://script.google.com/macros/s/");
+      return;
+    }
+
+    // Validate Proxy URL format if provided
+    if (proxyUrl && !proxyUrl.startsWith("http")) {
+      alert("Invalid Proxy URL!\nMust start with: http:// or https://");
+      return;
+    }
+
+    // Save both URLs
+    if (googleScriptUrl) {
+      localStorage.setItem('google_script_url', googleScriptUrl);
+    }
+    if (proxyUrl) {
+      localStorage.setItem('proxy_url', proxyUrl);
+    }
+
     setShowSettingsModal(false);
-    alert('Settings Saved!');
+    alert('✅ Settings Saved!\n\nGoogle Sheet integration will use:\n' + 
+          (proxyUrl ? `Proxy: ${proxyUrl.substring(0, 40)}...` : '') +
+          (googleScriptUrl && proxyUrl ? '\nOR\n' : '') +
+          (googleScriptUrl ? `Direct: ${googleScriptUrl.substring(0, 40)}...` : ''));
   };
 
   const debugItemsByCategory = () => {
@@ -913,16 +952,26 @@ function App() {
   React.useEffect(() => {
     if (currentItem.category) {
       console.log(`\n📦 CATEGORY SELECTED: "${currentItem.category}"`);
+      console.log(`   Total dbItems in state: ${dbItems.length}`);
       console.log(`   Total items in category: ${filteredItems.length}`);
+      
       if (filteredItems.length > 0) {
         console.log('   First 10 items:', filteredItems.slice(0, 10).map((i, idx) => `${idx+1}. ${i.itemName} (${i.defaultWidth || 'N/A'})`));
       } else {
         console.log('   ⚠️  NO ITEMS FOUND IN THIS CATEGORY!');
         console.log('   Total items in database:', dbItems.length);
-        console.log('   Categories available:', [...new Set(dbItems.map(i => i.category))]);
+        const categories = [...new Set(dbItems.map(i => i.category))];
+        console.log('   Categories available:', categories);
+        console.log('   Searching for category (case-insensitive):', currentItem.category.toLowerCase());
+        const categoryMatch = dbItems.find(i => i.category?.toLowerCase() === currentItem.category.toLowerCase());
+        if (categoryMatch) {
+          console.log('   ✅ Found matching category:', categoryMatch.category);
+        } else {
+          console.log('   ❌ No exact category match found');
+        }
       }
     }
-  }, [currentItem.category, filteredItems.length]);
+  }, [currentItem.category, filteredItems.length, dbItems.length]);
 
   const userHistory = historyOrders
     .filter(order => session && order.formData.salesPerson === session.salesPerson.name)
@@ -1798,7 +1847,27 @@ function App() {
             <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
                
                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Google Apps Script Web App URL</label>
+                  <label className="text-sm font-bold text-gray-700 flex items-center">
+                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Proxy URL (Recommended)
+                  </label>
+                  <div className="flex space-x-2">
+                    <input 
+                      type="text" 
+                      className="flex-1 border rounded px-3 py-2 text-sm"
+                      placeholder="https://your-app.vercel.app/api/proxy"
+                      value={proxyUrl}
+                      onChange={(e) => setProxyUrl(e.target.value)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    🚀 <strong>Recommended:</strong> Use Vercel proxy to bypass CORS issues and save data to Google Sheets safely.
+                  </p>
+               </div>
+
+               <div className="border-t pt-4">
+                  <label className="text-sm font-bold text-gray-700 flex items-center">
+                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Google Apps Script URL (Legacy)
+                  </label>
                   <div className="flex space-x-2">
                     <input 
                       type="text" 
@@ -1807,25 +1876,25 @@ function App() {
                       value={googleScriptUrl}
                       onChange={(e) => setGoogleScriptUrl(e.target.value)}
                     />
-                    <Button onClick={handleSaveSettings}>Save</Button>
                   </div>
                   <p className="text-xs text-gray-500">
-                    Required to save data to Google Sheets. URL must end in <code>/exec</code>.
+                    Fallback option. URL must end in <code>/userweb</code> or <code>/exec</code>.
                   </p>
                </div>
 
-               <div className="border-t pt-4">
-                  <h4 className="text-sm font-bold text-gray-800 mb-2">Google Sheet Integration Guide</h4>
-                  <ol className="list-decimal list-inside text-sm text-gray-600 space-y-2">
-                     <li>Open your Google Sheet.</li>
-                     <li>Go to <strong>Extensions</strong> {'>'} <strong>Apps Script</strong>.</li>
-                     <li>Copy the code below and paste it into the editor (replace everything).</li>
-                     <li>Click <strong>Deploy</strong> {'>'} <strong>New deployment</strong>.</li>
-                     <li>Select type: <strong>Web app</strong>.</li>
-                     <li>Set <i>Who has access</i> to: <strong>Anyone</strong> (Important!).</li>
-                     <li>Click <strong>Deploy</strong>, copy the URL, and paste it above.</li>
+               <div className="bg-blue-50 border border-blue-200 rounded p-4">
+                  <p className="text-sm text-blue-900 font-bold mb-2">📝 How to Configure:</p>
+                  <ol className="list-decimal list-inside text-sm text-blue-800 space-y-1">
+                    <li><strong>Step 1:</strong> If using Proxy: Paste your Vercel app URL + /api/proxy</li>
+                    <li><strong>Step 2:</strong> If using Direct: Deploy Google Apps Script and paste URL</li>
+                    <li><strong>Step 3:</strong> Click "Save" button to save settings</li>
+                    <li><strong>Step 4:</strong> Test by submitting an order</li>
                   </ol>
+               </div>
 
+               <div className="border-t pt-4">
+                  <h4 className="text-sm font-bold text-gray-800 mb-2">Google Apps Script Code</h4>
+                  <p className="text-xs text-gray-600 mb-2">Copy this code to your Google Sheet's Apps Script editor:</p>
                   <div className="mt-3 relative">
                      <div className="absolute top-2 right-2">
                         <Button size="sm" variant="secondary" onClick={() => copyToClipboard(GAS_CODE)}>
@@ -1849,6 +1918,15 @@ function App() {
                     View All Items by Category (Check Console)
                   </Button>
                   <p className="text-xs text-gray-500 mt-2">Click to see all items in database. Press F12 to open Developer Console and check the output.</p>
+               </div>
+
+               <div className="border-t pt-4">
+                  <Button 
+                    onClick={handleSaveSettings}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    💾 Save Settings
+                  </Button>
                </div>
 
             </div>
