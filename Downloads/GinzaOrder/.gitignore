@@ -1,0 +1,60 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Documentation files (keep README.md only)
+ACTION_PLAN.md
+BRANCH_IDS.md
+BRANCH_WISE_SHEETS_SETUP.md
+CKU_SEARCH_DEBUG.md
+COMPLETE_DEPLOYMENT_STEPS.md
+COMPLETE_TROUBLESHOOT.md
+CONSOLE_WARNINGS_GUIDE.md
+CUSTOMER_SEARCH_DEBUG.md
+DEPLOYMENT_VERIFICATION.md
+DOCUMENTATION_INDEX.md
+FINAL_FIX_SUMMARY.md
+FIX_GOOGLE_SHEET_401.md
+FIX_SUMMARY.md
+GOOGLE_SHEETS_COMPLETE_GUIDE.md
+GOOGLE_SHEETS_SETUP.md
+GOOGLE_SHEET_FIX.md
+GOOGLE_SHEET_TROUBLESHOOTING.md
+IMPROVEMENTS_SUMMARY.md
+PROXY_SETUP_GUIDE.md
+QUICK_REFERENCE.md
+QUICK_SHEETS_SETUP.md
+QUICK_START.md
+QUICK_TROUBLESHOOT.md
+QUICK_TROUBLESHOOTING.md
+SEED_DATA_GUIDE.md
+SETUP_CHECKLIST.md
+STATUS_REPORT.md
+SUPABASE_DEBUG.md
+TEST_INSTRUCTIONS.md
+VISUAL_QUICK_START.md
+
+# Misc
+New folder/
+.env.local
