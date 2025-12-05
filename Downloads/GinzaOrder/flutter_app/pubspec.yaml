@@ -1,0 +1,73 @@
+name: ginza_order_portal
+description: "Ginza Industries Order Portal - Flutter App"
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # UI Components
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
+  flutter_iconly: ^1.0.2
+  
+  # State Management
+  provider: ^6.0.0
+  
+  # Backend & Database
+  supabase_flutter: ^1.10.0
+  supabase: ^2.0.0
+  
+  # API Integration
+  google_generative_ai: ^0.4.0
+  http: ^1.1.0
+  
+  # Date & Time
+  intl: ^0.19.0
+  
+  # File Management
+  file_picker: ^6.1.0
+  path_provider: ^2.1.0
+  
+  # JSON Serialization
+  json_annotation: ^4.8.0
+  
+  # Environment Variables
+  flutter_dotenv: ^5.1.0
+  
+  # PDF & Export
+  pdf: ^3.10.0
+  printing: ^5.11.0
+  
+  # Notification
+  flutter_local_notifications: ^14.1.0
+  
+  # Network
+  connectivity_plus: ^5.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.0
+  json_serializable: ^6.7.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/logo/
+    - assets/icons/
+    - .env
+  
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
