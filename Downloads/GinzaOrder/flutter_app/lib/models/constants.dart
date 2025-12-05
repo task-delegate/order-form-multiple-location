@@ -3,7 +3,7 @@ class Branch {
   final String name;
   final String location;
 
-  Branch({required this.id, required this.name, required this.location});
+  const Branch({required this.id, required this.name, required this.location});
 
   static List<Branch> getAllBranches() => [
     Branch(id: 'ahmedabad', name: 'Ahmedabad', location: 'Gujarat'),
@@ -19,7 +19,7 @@ class SalesPerson {
   final String branch;
   final String contactNo;
 
-  SalesPerson({
+  const SalesPerson({
     required this.id,
     required this.name,
     required this.branch,
@@ -95,7 +95,11 @@ class ItemCategory {
   final String name;
   final List<String> items;
 
-  ItemCategory({required this.id, required this.name, required this.items});
+  const ItemCategory({
+    required this.id,
+    required this.name,
+    required this.items,
+  });
 
   static List<ItemCategory> getAllCategories() => [
     ItemCategory(
@@ -116,10 +120,4 @@ class ItemCategory {
   ];
 }
 
-const List<String> MEASUREMENT_UNITS = [
-  'Meter',
-  'Piece',
-  'Dozen',
-  'Box',
-  'Kg',
-];
+const List<String> MEASUREMENT_UNITS = ['Meter', 'Piece', 'Dozen', 'Box', 'Kg'];

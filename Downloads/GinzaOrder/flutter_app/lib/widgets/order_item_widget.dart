@@ -114,10 +114,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 ),
               ),
               items: ItemCategory.getAllCategories()
-                  .map((cat) => DropdownMenuItem(
-                        value: cat.id,
-                        child: Text(cat.name),
-                      ))
+                  .map(
+                    (cat) =>
+                        DropdownMenuItem(value: cat.id, child: Text(cat.name)),
+                  )
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -142,10 +142,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 items: ItemCategory.getAllCategories()
                     .firstWhere((cat) => cat.id == _selectedCategory)
                     .items
-                    .map((item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ))
+                    .map(
+                      (item) =>
+                          DropdownMenuItem(value: item, child: Text(item)),
+                    )
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -264,10 +264,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                       ),
                     ),
                     items: MEASUREMENT_UNITS
-                        .map((uom) => DropdownMenuItem(
-                              value: uom,
-                              child: Text(uom),
-                            ))
+                        .map(
+                          (uom) =>
+                              DropdownMenuItem(value: uom, child: Text(uom)),
+                        )
                         .toList(),
                     onChanged: (value) {
                       setState(() => _selectedUom = value);
@@ -317,10 +317,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                         ),
                       ),
                       items: MEASUREMENT_UNITS
-                          .map((uom) => DropdownMenuItem(
-                                value: uom,
-                                child: Text(uom),
-                              ))
+                          .map(
+                            (uom) =>
+                                DropdownMenuItem(value: uom, child: Text(uom)),
+                          )
                           .toList(),
                       onChanged: (value) {
                         setState(() => _selectedUom = value);

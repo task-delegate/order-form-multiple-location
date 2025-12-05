@@ -6,18 +6,15 @@ class GoogleSheetsService {
   static final String _gasUrl = dotenv.env['GAS_URL'] ?? '';
 
   // Submit order to Google Sheet
-  static Future<bool> submitOrderToSheet(
-    Map<String, dynamic> orderData,
-  ) async {
+  static Future<bool> submitOrderToSheet(Map<String, dynamic> orderData) async {
     try {
-      final response = await http.post(
-        Uri.parse(_gasUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'action': 'submitOrder',
-          'data': orderData,
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse(_gasUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'action': 'submitOrder', 'data': orderData}),
+          )
+          .timeout(const Duration(seconds: 30));
 
       return response.statusCode == 200;
     } catch (e) {
@@ -31,14 +28,13 @@ class GoogleSheetsService {
     String dataType,
   ) async {
     try {
-      final response = await http.post(
-        Uri.parse(_gasUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'action': 'getMasterData',
-          'type': dataType,
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse(_gasUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'action': 'getMasterData', 'type': dataType}),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

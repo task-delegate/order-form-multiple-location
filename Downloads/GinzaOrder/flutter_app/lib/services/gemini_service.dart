@@ -12,7 +12,8 @@ class GeminiService {
   // Parse order from text using Gemini
   static Future<Map<String, dynamic>> parseOrderFromText(String text) async {
     try {
-      final prompt = '''
+      final prompt =
+          '''
       Parse the following order information and extract:
       - customer_name
       - contact_no
@@ -30,16 +31,10 @@ class GeminiService {
       final response = await _model.generateContent(content);
 
       // Parse response - simplified version
-      return {
-        'success': true,
-        'data': response.text,
-      };
+      return {'success': true, 'data': response.text};
     } catch (e) {
       print('Error parsing order: $e');
-      return {
-        'success': false,
-        'error': e.toString(),
-      };
+      return {'success': false, 'error': e.toString()};
     }
   }
 
@@ -51,11 +46,14 @@ class GeminiService {
   ) async {
     try {
       final itemsList = items
-          .map((item) =>
-              '${item['name']} - Qty: ${item['qty']} x Rate: ${item['rate']}')
+          .map(
+            (item) =>
+                '${item['name']} - Qty: ${item['qty']} x Rate: ${item['rate']}',
+          )
           .join('\n');
 
-      final prompt = '''
+      final prompt =
+          '''
       Generate a professional order summary for:
       Customer: $customerName
       Items:

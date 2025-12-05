@@ -3,7 +3,7 @@ description: "Ginza Industries Order Portal - Flutter App"
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.8.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -19,7 +19,7 @@ dependencies:
   
   # Backend & Database
   supabase_flutter: ^1.10.0
-  supabase: ^2.0.0
+  supabase: ^1.11.11
   
   # API Integration
   google_generative_ai: ^0.4.0
@@ -29,11 +29,10 @@ dependencies:
   intl: ^0.19.0
   
   # File Management
-  file_picker: ^6.1.0
   path_provider: ^2.1.0
   
   # JSON Serialization
-  json_annotation: ^4.8.0
+  json_annotation: ^4.9.0
   
   # Environment Variables
   flutter_dotenv: ^5.1.0
@@ -62,12 +61,3 @@ flutter:
     - assets/logo/
     - assets/icons/
     - .env
-  
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
