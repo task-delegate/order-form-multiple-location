@@ -42,7 +42,6 @@ dependencies:
   printing: ^5.11.0
   
   # Notification
-  flutter_local_notifications: ^14.1.0
   
   # Network
   connectivity_plus: ^5.0.0
